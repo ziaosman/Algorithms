@@ -138,16 +138,17 @@ public class Percolation
 	}
 
 	public static void main(String[] args) {
-    	Percolation perc = new Percolation(3);
+    	Percolation perc = new Percolation(4);
     	perc.open(1, 2);
     	perc.open(2, 2);
     	perc.open(2, 3);
-    	perc.open(3, 1);
-    	boolean c = perc.isFull(2, 2);
-    	boolean c1 = perc.grid.connected(perc.index(1, 2), perc.index(2, 2));
-    	boolean c2 = perc.percolates();
+    	perc.open(3, 3);
+    	perc.open(4,3);
+    	boolean a = perc.isFull(2, 2);
+    	boolean b = perc.grid.connected(perc.index(1, 2), perc.index(2, 2));
+    	boolean c = perc.percolates();
+    	StdOut.println(a);
+    	StdOut.println(b);
     	StdOut.println(c);
-    	StdOut.println(c1);
-    	StdOut.println(c2);
   }
 }
