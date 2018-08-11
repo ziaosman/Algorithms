@@ -1,24 +1,25 @@
 //Zia
 //Defines percolation class 
-
+import edu.princeton.cs.algs4.StdIn;
+import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
-
 public class Percolation
 {
 	private boolean[] gridStatus;
 	private WeightedQuickUnionUF grid; 
-	private int gridSize, topRow, bottomRow;
+	private int size, topRow, bottomRow, n;
 
    //create n-by-n grid, with all sites blocked
    public Percolation(int n)
    {
-   		gridSize = n*n;
-   		grid = new WeightedQuickUnionUF(gridSize+2);
-   		gridStatus= new Boolean(gridSize);
+   		size = n*n;
+   		grid = new WeightedQuickUnionUF(size+2);
+   		gridStatus= new boolean[size];
+   		this.n = n;
 
    		//indexes of top and bottom row in array
-   		topRow = n*n+1;
-   		bottomRow = n*n+2;
+   		topRow = n*n;
+   		bottomRow = n*n+1;
    }
 
    //Opens a site on the grid
@@ -26,43 +27,38 @@ public class Percolation
    //Throw: IllegalArgumentException if site is not on the grid
    public void open(int row, int col)
    {
-   		if (!isLegal(row,col))
+   		if (isLegal(row, col))
    		{
-   			throw new IllegalArgumentException("Sorry, Those values are not valid");
+   			gridStatus[index(row,col)] = true;
+   			connectTo(row, col);
    		}
-   		gradStatus[index(row, col)] = true;
    }
 
    //Returns True if the site is open
    //Throw: IllegalArgumentException if site is not on the grid
    public boolean isOpen(int row, int col) 
    {
-   		if (!isLegal(row,col))
-   		{
-   			throw new IllegalArgumentException("Sorry, Those values are not valid");
-   		}
-   		return gradStatus[index(row, col)];
+   		isLegal(row, col);
+   		return gridStatus[index(row, col)];
+   
    }
 
    //Returns True a site is connected to the top row
    //Throw: IllegalArgumentException if site is not on the grid
    public boolean isFull(int row, int col) 
    {
-   		if (!isLegal(row,col))
-   		{
-   			throw new IllegalArgumentException("Sorry, Those values are not valid");
-   		}
-   		return gridSize.connected[index(row,col),topRow];
+   		isLegal(row, col);
+   		return grid.connected(index(row,col),topRow);
    }
 
    //Returns the number of open sites in the grid
    public int numberOfOpenSites()
    {
-   		counter = 0;
-		for (int i : gridStatus)
+   		int counter = 0;
+		for (boolean site : gridStatus)
    		{
-   			if (gridStatus[i] == true)
-   			counter++
+   			if (site == true)
+   			counter++;
    		}
 		return counter;
 	}
@@ -70,26 +66,88 @@ public class Percolation
    //Returns True if the grid percolates 
    public boolean percolates()
    {
-   		return gridSize.connected(topRow,bottomRow);
+   		return grid.connected(topRow,bottomRow);
    }
 
    //Calculates index of site in the WeightedQuickUnionUF array called grid
    private int index(int row, int col)
 	{
-		return (n*(i-row)+col)-1;
+		return (n*(row-1)+col)-1;
 	}
 
 	//Returns true if site is located on the grid
 	private boolean isLegal(int row, int col)
 	{
-		if((row < 1 || row > n) || (col < 1 || col > n))
+		if(row < 1 || row > n)
 		{
-			return false;
+			throw new IllegalArgumentException("Sorry, Those values are not valid");
 		}
-		return true;
+		else if (col < 1 || col > n)
+		{
+			throw new IllegalArgumentException("Sorry, Those values are not valid");
+		}
+		else
+		{
+			return true;
+		}
 	}
-}
-   public static void main(String[] args)
+
+	//Connects newly open sites to neighboring open sites 
+	private void connectTo(int row, int col)
 	{
-		//Test client
+		int i = index(row, col);
+		//Connects to open sites on the right 
+		if (col!= n)
+		{
+			openUnion(row, col+1, i);
+		}
+		//Connects to open sites on the left
+		if(col != 1)
+		{
+			openUnion(row, col-1, i);
+		}
+		//Connects to open sites below
+		if(row != n)
+		{
+			openUnion(row+1, col, i);
+		}
+		//Connects to open sites above
+		if(row != 1)
+		{
+			openUnion(row-1, col, i);
+		}
+		//Build a virtual top row of open sites
+		if(row == 1)
+		{
+			grid.union(topRow, i);
+		}
+		//Build a virtual bottom row of open sites
+		if(row == n)
+		{
+			grid.union(bottomRow, i);
+		}
 	}
+
+	//Checks if neighboring site is open and performs WeightedQuickUnion union method
+	private void openUnion(int row, int col, int i)
+	{
+		if (isOpen(row, col) == true)
+		{
+			grid.union(index(row, col), i);
+		}
+	}
+
+	public static void main(String[] args) {
+    	Percolation perc = new Percolation(3);
+    	perc.open(1, 2);
+    	perc.open(2, 2);
+    	perc.open(2, 3);
+    	perc.open(3, 1);
+    	boolean c = perc.isFull(2, 2);
+    	boolean c1 = perc.grid.connected(perc.index(1, 2), perc.index(2, 2));
+    	boolean c2 = perc.percolates();
+    	StdOut.println(c);
+    	StdOut.println(c1);
+    	StdOut.println(c2);
+  }
+}
